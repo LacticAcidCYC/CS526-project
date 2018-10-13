@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿
 using UnityEngine;
 using System.Collections;
@@ -9,8 +10,8 @@ public class Player : NetworkBehaviour
 {
     // 最多拥有的炸弹数：初始炸弹数 bombs + MAX_BOMBS
     private readonly int MAX_BOMBS = 5;
-    private readonly int MAX_SCOPE = 5;
-    private readonly float MAX_SPEED = 6f;
+    private readonly int MAX_SCOPE = 7;
+    private readonly float MAX_SPEED = 5f;
     //Manager
     public GlobalStateManager globalManager;
     public float healthValue = 100;
@@ -33,7 +34,7 @@ public class Player : NetworkBehaviour
     private int bombScope = 2;
 
     //加速数值
-    private float speedup = 5f;
+    private float speedup = 0f;
     //Prefabs
     public GameObject bombPrefab;
     //JoyStick控制
