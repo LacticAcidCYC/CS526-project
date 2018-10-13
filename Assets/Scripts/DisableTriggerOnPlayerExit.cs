@@ -37,13 +37,15 @@ using System.Collections;
 /// </summary>
 public class DisableTriggerOnPlayerExit : MonoBehaviour
 {
-
     public void OnTriggerExit (Collider other)
     {
         if (other.gameObject.CompareTag ("Player"))
         { // When the player exits the trigger area
             GetComponent<Collider> ().isTrigger = false; // Disable the trigger
-            transform.parent.gameObject.GetComponent<Bomb>().getOwner().GetComponent<Player>().enableDrop();
+            enablePlayerDrop();
         }
+    }
+    public void enablePlayerDrop(){
+        transform.parent.gameObject.GetComponent<Bomb>().getOwner().GetComponent<Player>().enableDrop();
     }
 }
