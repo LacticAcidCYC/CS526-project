@@ -9,8 +9,8 @@ public class Player : NetworkBehaviour
 {
     // 最多拥有的炸弹数：初始炸弹数 bombs + MAX_BOMBS
     private readonly int MAX_BOMBS = 5;
-    private readonly int MAX_SCOPE = 5;
-    private readonly float MAX_SPEED = 6f;
+    private readonly int MAX_SCOPE = 7;
+    private readonly float MAX_SPEED = 5f;
     //Manager
     public GlobalStateManager globalManager;
     public float healthValue = 100;
@@ -33,7 +33,7 @@ public class Player : NetworkBehaviour
     private int bombScope = 2;
 
     //加速数值
-    private float speedup = 5f;
+    private float speedup = 0f;
     //Prefabs
     public GameObject bombPrefab;
 
@@ -91,28 +91,28 @@ public class Player : NetworkBehaviour
     {
         if (Input.GetKey (KeyCode.W))
         { //Up movement
-            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, moveSpeed);
+            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, (moveSpeed + speedup));
             //myTransform.rotation = Quaternion.Euler (0, 0, 0);
             //animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.A))
         { //Left movement
-            rigidBody.velocity = new Vector3 (-moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
+            rigidBody.velocity = new Vector3 (-(moveSpeed + speedup), rigidBody.velocity.y, rigidBody.velocity.z);
             //myTransform.rotation = Quaternion.Euler (0, 270, 0);
             //animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.S))
         { //Down movement
-            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -moveSpeed);
+            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -(moveSpeed + speedup));
             //myTransform.rotation = Quaternion.Euler (0, 180, 0);
             //animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.D))
         { //Right movement
-            rigidBody.velocity = new Vector3 (moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
+            rigidBody.velocity = new Vector3 ((moveSpeed + speedup), rigidBody.velocity.y, rigidBody.velocity.z);
             //myTransform.rotation = Quaternion.Euler (0, 90, 0);
             //animator.SetBool ("Walking", true);
         }
@@ -215,6 +215,7 @@ public class Player : NetworkBehaviour
 
     public void bombExploded()
     {
+        Debug.Log("boooom!");
         bombs++;
     }
 

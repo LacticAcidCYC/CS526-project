@@ -41,7 +41,8 @@ public class Bomb : NetworkBehaviour
         StartCoroutine (CreateExplosions (Vector3.left));
 
         GetComponent<MeshRenderer> ().enabled = false; //Disable mesh
-        exploded = true; 
+        exploded = true;
+        transform.Find("Collider").gameObject.GetComponent<DisableTriggerOnPlayerExit>().enablePlayerDrop();
         transform.Find ("Collider").gameObject.SetActive (false); //Disable the collider
         owner.GetComponent<Player>().bombExploded();
         Destroy (gameObject, .3f); //Destroy the actual bomb in 0.3 seconds, after all coroutines have finished
