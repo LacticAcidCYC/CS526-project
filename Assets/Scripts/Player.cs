@@ -36,7 +36,9 @@ public class Player : NetworkBehaviour
     private float speedup = 5f;
     //Prefabs
     public GameObject bombPrefab;
-
+    //JoyStick控制
+    //private Image joystick;
+    private VirtualJoyStick joystick;
     //Cached components
     private Rigidbody rigidBody;
     private Transform myTransform;
@@ -52,8 +54,10 @@ public class Player : NetworkBehaviour
         healthSlider = GetComponentInChildren<Slider>();
         rigidBody = GetComponent<Rigidbody> ();
         myTransform = transform;
+        joystick = GameObject.FindGameObjectWithTag("control").GetComponent<VirtualJoyStick>();
         //animator = myTransform.Find ("PlayerModel").GetComponent<Animator> ();
         //animator = GetComponent<Animator> ();
+        GameObject.FindGameObjectWithTag("bombControl").GetComponent<Button>().onClick.AddListener(this.OnClickBomb);
     }
 
     // Update is called once per frame
@@ -89,6 +93,12 @@ public class Player : NetworkBehaviour
     /// </summary>
     private void UpdatePlayer1Movement ()
     {
+        Vector3 dir = Vector3.zero;
+        dir.x = joystick.Horizontal();
+        dir.z = joystick.Vertical();
+        rigidBody.velocity = new Vector3(dir.x*moveSpeed, 0, dir.z*moveSpeed);
+
+        /*
         if (Input.GetKey (KeyCode.W))
         { //Up movement
             rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, moveSpeed);
@@ -116,12 +126,25 @@ public class Player : NetworkBehaviour
             //myTransform.rotation = Quaternion.Euler (0, 90, 0);
             //animator.SetBool ("Walking", true);
         }
+        */
 
-        if (canDropBombs && Input.GetKeyDown (KeyCode.Space))
+        if (Input.GetKeyDown (KeyCode.Space))
         { //Drop bomb
-            Debug.Log("aaaaa");
-            CmdDropBomb ();
+            bombput();
         }
+    }
+
+    public void bombput()
+    {
+        if (canDropBombs)
+        {
+            CmdDropBomb();
+        }
+    }
+
+    public void OnClickBomb()
+    {
+        bombput();
     }
 
     /// <summary>
@@ -190,6 +213,7 @@ public class Player : NetworkBehaviour
 
     [ClientRpc]
     void RpcTakeDamage(float healthValue){
+        Debug.Log(healthValue + "RpcTakeDamage");
         healthSlider.value = healthValue;
     }
 
