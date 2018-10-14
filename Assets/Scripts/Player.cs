@@ -1,4 +1,3 @@
-﻿
 using UnityEngine;
 using System.Collections;
 using System;
@@ -15,7 +14,7 @@ public class Player : NetworkBehaviour
     public GlobalStateManager globalManager;
     public float healthValue = 100;
     public Slider healthSlider;
-    
+
     public float moveSpeed = 5f;
     public bool canDropBombs = true;
     //Can the player drop bombs?
@@ -24,8 +23,17 @@ public class Player : NetworkBehaviour
     public bool dead = false;
     //Is this player dead?
 
-     //当前拥有的炸弹数
-    private int bombs = 3;
+    //当前拥有的炸弹
+    private int _bombs = 3;
+    private int bombs {
+        get { return _bombs; }
+        set {
+            Debug.Log("^^^^^^^^^^bombs changed");
+            Debug.Log(GetComponent<NetworkIdentity>().netId);
+            _bombs = value;
+            Debug.Log(_bombs);
+        }
+    }
     //已经增加的炸弹数
     private int bombLimit = 0;
 
@@ -36,7 +44,9 @@ public class Player : NetworkBehaviour
     private float speedup = 0f;
     //Prefabs
     public GameObject bombPrefab;
-
+    //JoyStick控制
+    //private Image joystick;
+    private VirtualJoyStick joystick;
     //Cached components
     private Rigidbody rigidBody;
     private Transform myTransform;
@@ -46,26 +56,30 @@ public class Player : NetworkBehaviour
     //     animator = myTransform.Find ("PlayerModel").GetComponent<Animator> ();
     // }
     // Use this for initialization
-    void Start ()
+    void Start()
     {
+        Debug.Log(GetComponent<NetworkIdentity>().playerControllerId);
         //Cache the attached components for better performance and less typing
         healthSlider = GetComponentInChildren<Slider>();
-        rigidBody = GetComponent<Rigidbody> ();
+        rigidBody = GetComponent<Rigidbody>();
         myTransform = transform;
+        joystick = GameObject.FindGameObjectWithTag("control").GetComponent<VirtualJoyStick>();
         //animator = myTransform.Find ("PlayerModel").GetComponent<Animator> ();
         //animator = GetComponent<Animator> ();
+        GameObject.FindGameObjectWithTag("bombControl").GetComponent<Button>().onClick.AddListener(this.OnClickBomb);
     }
 
     // Update is called once per frame
-    void Update ()
+    void Update()
     {
-        if(isLocalPlayer){
-            UpdateMovement ();
+        if (isLocalPlayer)
+        {
+            UpdateMovement();
         }
-        
+
     }
 
-    private void UpdateMovement ()
+    private void UpdateMovement()
     {
         //animator.SetBool ("Walking", false); //Resets walking animation to idle
 
@@ -77,7 +91,7 @@ public class Player : NetworkBehaviour
         //Depending on the player number, use different input for moving
         // if (playerNumber == 1)
         // {
-        UpdatePlayer1Movement ();
+        UpdatePlayer1Movement();
         // } else
         // {
         //     UpdatePlayer2Movement ();
@@ -87,41 +101,60 @@ public class Player : NetworkBehaviour
     /// <summary>
     /// Updates Player 1's movement and facing rotation using the WASD keys and drops bombs using Space
     /// </summary>
-    private void UpdatePlayer1Movement ()
+    private void UpdatePlayer1Movement()
     {
+        Vector3 dir = Vector3.zero;
+        dir.x = joystick.Horizontal();
+        dir.z = joystick.Vertical();
+        rigidBody.velocity = new Vector3(dir.x * moveSpeed, 0, dir.z * moveSpeed);
+
+        /*
         if (Input.GetKey (KeyCode.W))
         { //Up movement
-            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, (moveSpeed + speedup));
+            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, moveSpeed);
             //myTransform.rotation = Quaternion.Euler (0, 0, 0);
             //animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.A))
         { //Left movement
-            rigidBody.velocity = new Vector3 (-(moveSpeed + speedup), rigidBody.velocity.y, rigidBody.velocity.z);
+            rigidBody.velocity = new Vector3 (-moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
             //myTransform.rotation = Quaternion.Euler (0, 270, 0);
             //animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.S))
         { //Down movement
-            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -(moveSpeed + speedup));
+            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -moveSpeed);
             //myTransform.rotation = Quaternion.Euler (0, 180, 0);
             //animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.D))
         { //Right movement
-            rigidBody.velocity = new Vector3 ((moveSpeed + speedup), rigidBody.velocity.y, rigidBody.velocity.z);
+            rigidBody.velocity = new Vector3 (moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
             //myTransform.rotation = Quaternion.Euler (0, 90, 0);
             //animator.SetBool ("Walking", true);
         }
+        */
 
-        if (canDropBombs && Input.GetKeyDown (KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         { //Drop bomb
-            Debug.Log("aaaaa");
-            CmdDropBomb ();
+            bombput();
         }
+    }
+
+    public void bombput()
+    {
+        if (canDropBombs)
+        {
+            DropBomb();
+        }
+    }
+
+    public void OnClickBomb()
+    {
+        bombput();
     }
 
     /// <summary>
@@ -166,20 +199,29 @@ public class Player : NetworkBehaviour
     /// <summary>
     /// Drops a bomb beneath the player
     /// </summary>
-    [Command]
-    private void CmdDropBomb ()
+
+    private void DropBomb ()
     {
         if (bombPrefab && bombs > 0)
         { //Check if bomb prefab is assigned first
             canDropBombs = false;
             bombs--;
-            // Create new bomb and snap it to a tile
-            GameObject bomb = Instantiate (bombPrefab,
-                new Vector3 (Mathf.RoundToInt (myTransform.position.x), bombPrefab.transform.position.y, Mathf.RoundToInt (myTransform.position.z)),
-                bombPrefab.transform.rotation) ;
-            bomb.GetComponent<Bomb>().initBomb(bombScope, gameObject);
-            NetworkServer.Spawn(bomb);
+             //Create new bomb and snap it to a tile
+            //GameObject bomb = Instantiate (bombPrefab,
+            //    new Vector3 (Mathf.RoundToInt (myTransform.position.x), bombPrefab.transform.position.y, Mathf.RoundToInt (myTransform.position.z)),
+            //    bombPrefab.transform.rotation) ;
+            //bomb.GetComponent<Bomb>().initBomb(bombScope, gameObject);
+            //NetworkServer.Spawn(bomb);
+            CmdDrop(GetComponent<NetworkIdentity>().netId, bombScope);
         }
+    }
+    [Command]
+    void CmdDrop(NetworkInstanceId id, int scope){
+        GameObject bomb = Instantiate(bombPrefab,
+                new Vector3(Mathf.RoundToInt(myTransform.position.x), bombPrefab.transform.position.y, Mathf.RoundToInt(myTransform.position.z)),
+                bombPrefab.transform.rotation);
+        bomb.GetComponent<Bomb>().initBomb(scope, id);
+        NetworkServer.Spawn(bomb);
     }
 
     [Command]
@@ -190,6 +232,7 @@ public class Player : NetworkBehaviour
 
     [ClientRpc]
     void RpcTakeDamage(float healthValue){
+        Debug.Log(healthValue + "RpcTakeDamage");
         healthSlider.value = healthValue;
     }
 
@@ -215,7 +258,6 @@ public class Player : NetworkBehaviour
 
     public void bombExploded()
     {
-        Debug.Log("boooom!");
         bombs++;
     }
 
