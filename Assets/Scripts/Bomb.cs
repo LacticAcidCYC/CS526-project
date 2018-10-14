@@ -12,13 +12,31 @@ public class Bomb : NetworkBehaviour
     // This LayerMask makes sure the rays cast to check for free spaces only hits the blocks in the level
     private bool exploded = false;
      //爆炸范围
-    private int bombScope;
-    private GameObject owner;
+    [SyncVar]
+    private int bombScope = 0;
 
-    public void initBomb(int scope, GameObject player)
+    [SyncVar]
+    private NetworkInstanceId ownerNetid;
+    private GameObject _owner = null;
+    private GameObject owner {
+        get {
+            if(_owner != null) {
+                return _owner;
+            }
+            foreach(var player in GameObject.FindGameObjectsWithTag("Player")) {
+                if(player.GetComponent<NetworkIdentity>().netId == ownerNetid) {
+                    _owner = player;
+                    break;
+                }
+            }
+            return _owner;
+        }
+    }
+
+    public void initBomb(int scope, NetworkInstanceId ownerNetid)
     {
         bombScope = scope;
-        owner = player;
+        this.ownerNetid = ownerNetid;
     }
 
     // Use this for initialization
@@ -26,7 +44,7 @@ public class Bomb : NetworkBehaviour
     {
         Invoke ("Explode", 3f); //Call Explode in 3 seconds
     }
-    
+
     void Explode ()
     {
         //Explosion sound

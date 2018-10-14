@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Prototype.NetworkLobby
 {
 public class MyGameManager {
-
-	private static MyGameManager instance;
+        private Dictionary<GameObject, LobbyPlayer> mDatas;
+        private static MyGameManager instance;
 	public static MyGameManager Instance{
 		get{
 			if(instance == null){
@@ -18,14 +18,13 @@ public class MyGameManager {
 	private MyGameManager(){
 		mDatas = new Dictionary<GameObject,LobbyPlayer> ();
 	}
-	private Dictionary<GameObject, LobbyPlayer> mDatas;
 	//添加player数据
 	public void addPlayerData(GameObject gamePlayer, LobbyPlayer lobbyPlayer){
 		mDatas.Add(gamePlayer,lobbyPlayer);
 	}
 	//得到lobby中的数据
 	public LobbyPlayer GetLobbyPlayer(GameObject gamePlayer){
-		return mDatas [gamePlayer];
+		return mDatas[gamePlayer];
 	}
 }
 }
