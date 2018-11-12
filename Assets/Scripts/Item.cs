@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Item : MonoBehaviour {
+public class Item : NetworkBehaviour{
     // 道具种类，1:加速 2：加炸弹数量 3:加炸弹威力
     public int type = 1;
 	// Use this for initialization
@@ -14,6 +15,7 @@ public class Item : MonoBehaviour {
 	void Update () {
 		
 	}
+    
     public void OnTriggerEnter(Collider other)
     {   
 
@@ -35,4 +37,5 @@ public class Item : MonoBehaviour {
         }
 
     }
+
 }
