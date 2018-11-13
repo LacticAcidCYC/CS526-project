@@ -48,9 +48,9 @@ public class Player : NetworkBehaviour
     //private Image joystick;
     private FloatingJoystick joystick;
     //Cached components
-    private Rigidbody rigidBody;
+    public Rigidbody rigidBody;
     private Transform myTransform;
-    //private Animator animator;
+    private Animator animator;
 
     // void Awake(){
     //     animator = myTransform.Find ("PlayerModel").GetComponent<Animator> ();
@@ -65,8 +65,10 @@ public class Player : NetworkBehaviour
         myTransform = transform;
         joystick = FindObjectOfType<FloatingJoystick>();
         //animator = myTransform.Find ("PlayerModel").GetComponent<Animator> ();
-        //animator = GetComponent<Animator> ();
-        GameObject.FindGameObjectWithTag("bombControl").GetComponent<Button>().onClick.AddListener(this.OnClickBomb);
+        animator = GetComponent<Animator> ();
+        if(isLocalPlayer){
+            GameObject.FindGameObjectWithTag("bombControl").GetComponent<Button>().onClick.AddListener(this.OnClickBomb);
+        }
     }
 
     // Update is called once per frame
@@ -107,7 +109,25 @@ public class Player : NetworkBehaviour
         dir.x = joystick.Horizontal;
         dir.z = joystick.Vertical;
         rigidBody.velocity = new Vector3(dir.x * moveSpeed, 0, dir.z * moveSpeed);
+        if (dir.x == 0 && dir.z == 0) {
+            animator.SetBool("Walking", false);
+        }else {
+            animator.SetBool("Walking", true);
+        }
 
+        if (dir.z == 0 && dir.x >= 0){
+            myTransform.rotation = Quaternion.Euler(0, 0, 0);
+        }
+        if (dir.z == 0 && dir.x < 0)
+        {
+            myTransform.rotation = Quaternion.Euler(0, 180, 0);
+        }
+        if (dir.z < 0) {
+            myTransform.rotation = Quaternion.Euler(0, 270, 0);
+        }
+        if (dir.z > 0) {
+            myTransform.rotation = Quaternion.Euler(0, 90, 0);
+        }
         /*
         if (Input.GetKey (KeyCode.W))
         { //Up movement
