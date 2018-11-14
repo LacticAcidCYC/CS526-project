@@ -186,48 +186,80 @@ public class Player : NetworkBehaviour
             animator.SetBool("Walking", true);
         }
 
-        if (dir.z == 0 && dir.x >= 0){
-            myTransform.rotation = Quaternion.Euler(0, 0, 0);
-        }
-        if (dir.z == 0 && dir.x < 0)
+        if (dir.x >= 0 && dir.z >= 0)
         {
-            myTransform.rotation = Quaternion.Euler(0, 180, 0);
+            if (dir.x >= dir.z)
+            {
+                myTransform.rotation = Quaternion.Euler(0, 90, 0);
+            }
+            else
+            {
+                myTransform.rotation = Quaternion.Euler(0, 0, 0);
+            }
         }
-        if (dir.z < 0) {
-            myTransform.rotation = Quaternion.Euler(0, 270, 0);
+        else if (dir.x >= 0 && dir.z < 0)
+        {
+            if (dir.x >= Math.Abs(dir.z))
+            {
+                myTransform.rotation = Quaternion.Euler(0, 270, 0);
+            }
+            else
+            {
+                myTransform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+
         }
-        if (dir.z > 0) {
-            myTransform.rotation = Quaternion.Euler(0, 90, 0);
+        else if (dir.x < 0 && dir.z >= 0)
+        {
+            if (Math.Abs(dir.x) >= Math.Abs(dir.z))
+            {
+                myTransform.rotation = Quaternion.Euler(0, 90, 0);
+            }
+            else
+            {
+                myTransform.rotation = Quaternion.Euler(0, 180, 0);
+            }
         }
-        /*
+        else if (dir.x < 0 && dir.z < 0)
+        {
+            if (Math.Abs(dir.x) >= Math.Abs(dir.z))
+            {
+                myTransform.rotation = Quaternion.Euler(0, 270, 0);
+            }
+            else
+            {
+                myTransform.rotation = Quaternion.Euler(0, 180, 0);
+            }
+        }
+
         if (Input.GetKey (KeyCode.W))
         { //Up movement
             rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, moveSpeed);
-            //myTransform.rotation = Quaternion.Euler (0, 0, 0);
-            //animator.SetBool ("Walking", true);
+            myTransform.rotation = Quaternion.Euler (0, 0, 0);
+            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.A))
         { //Left movement
             rigidBody.velocity = new Vector3 (-moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
-            //myTransform.rotation = Quaternion.Euler (0, 270, 0);
-            //animator.SetBool ("Walking", true);
+            myTransform.rotation = Quaternion.Euler (0, 270, 0);
+            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.S))
         { //Down movement
             rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -moveSpeed);
-            //myTransform.rotation = Quaternion.Euler (0, 180, 0);
-            //animator.SetBool ("Walking", true);
+            myTransform.rotation = Quaternion.Euler (0, 180, 0);
+            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.D))
         { //Right movement
             rigidBody.velocity = new Vector3 (moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
-            //myTransform.rotation = Quaternion.Euler (0, 90, 0);
-            //animator.SetBool ("Walking", true);
+            myTransform.rotation = Quaternion.Euler (0, 90, 0);
+            animator.SetBool ("Walking", true);
         }
-        */
+
 
         if (Input.GetKeyDown(KeyCode.Space))
         { //Drop bomb
