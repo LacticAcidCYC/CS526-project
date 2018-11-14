@@ -36,11 +36,33 @@ using System.Collections;
 /// </summary>
 public class DestroySelf : MonoBehaviour
 {
-    public float Delay = 3f;
     //Delay in seconds before destroying the gameobject
+    public float Delay = 3f;
+
+    //Direction of the explosion
+    public Vector3 direction = new Vector3(0, 0, 0);
+
+    //Power of the explosion
+    public int power = 0;
 
     void Start ()
     {
         Destroy (gameObject, Delay);
+    }
+
+    public void setDir(Vector3 dir) {
+        direction = dir;
+    }
+
+    public Vector3 getDir() {
+        return direction;
+    }
+
+    public void setPower(int pow) {
+        power = pow;
+    }
+
+    public int getPower() {
+        return power;
     }
 }

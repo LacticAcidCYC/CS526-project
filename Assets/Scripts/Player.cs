@@ -42,8 +42,31 @@ public class Player : NetworkBehaviour
 
     //加速数值
     private float speedup = 0f;
+
+    // the diretion, last time, power of bouncing away by explosion
+    private bool toLeft = false;
+    private bool toRight = false;
+    private bool toUp = false;
+    private bool toDown = false;
+    private float leftTime = 0f;
+    private float rightTime = 0f;
+    private float upTime = 0f;
+    private float downTime = 0f;
+    private int leftPower = 0;
+    private int rightPower = 0;
+    private int upPower = 0;
+    private int downPower = 0;
+
+    //time of invincibility
+    private float immuneTime = 0f;
+
+    //on banana and slip direction
+    private bool bananaed = false;
+    private Vector3 slipDir = Vector3.zero;
+
     //Prefabs
     public GameObject bombPrefab;
+    public GameObject weakwallPrefab;
     //JoyStick控制
     //private Image joystick;
     private FloatingJoystick joystick;
@@ -81,6 +104,54 @@ public class Player : NetworkBehaviour
 
     }
 
+    private void FixedUpdate()
+    {   
+        //decrease the immune time
+        if(immuneTime > 0) {
+            immuneTime -= Time.deltaTime;
+        }
+        //slip to slipDir with a speed of 10f
+        if(bananaed) {
+            rigidBody.AddForce(slipDir * 10f, ForceMode.VelocityChange);
+        }
+        //the effect by exlposion
+        if(toLeft) {
+            leftTime = 0.5f + 0.1f * leftPower;
+            toLeft = false;
+        }
+        if(toRight) {
+            rightTime = 0.5f + 0.1f * rightPower;
+            toRight = false;
+        }
+        if(toUp) {
+            upTime = 0.5f + 0.1f * upPower;
+            toUp = false;
+        }
+        if(toDown) {
+            downTime = 0.5f + 0.1f * downPower;
+            toDown = false;
+        }
+        if(leftTime > 0) {
+            rigidBody.AddForce(new Vector3(-12f, 0, 0) * leftTime, ForceMode.VelocityChange);
+            leftTime -= Time.deltaTime;
+        }
+        if (rightTime > 0)
+        {
+            rigidBody.AddForce(new Vector3(12f, 0, 0) * rightTime, ForceMode.VelocityChange);
+            rightTime -= Time.deltaTime;
+        }
+        if (upTime > 0)
+        {
+            rigidBody.AddForce(new Vector3(0, 0, 12f) * upTime, ForceMode.VelocityChange);
+            upTime -= Time.deltaTime;
+        }
+        if (downTime > 0)
+        {
+            rigidBody.AddForce(new Vector3(0, 0, -12f) * downTime, ForceMode.VelocityChange);
+            downTime -= Time.deltaTime;
+        }
+    }
+
     private void UpdateMovement()
     {
         //animator.SetBool ("Walking", false); //Resets walking animation to idle
@@ -115,52 +186,87 @@ public class Player : NetworkBehaviour
             animator.SetBool("Walking", true);
         }
 
-        if (dir.z == 0 && dir.x >= 0){
-            myTransform.rotation = Quaternion.Euler(0, 0, 0);
-        }
-        if (dir.z == 0 && dir.x < 0)
+        if (dir.x >= 0 && dir.z >= 0)
         {
-            myTransform.rotation = Quaternion.Euler(0, 180, 0);
+            if (dir.x >= dir.z)
+            {
+                myTransform.rotation = Quaternion.Euler(0, 90, 0);
+            }
+            else
+            {
+                myTransform.rotation = Quaternion.Euler(0, 0, 0);
+            }
         }
-        if (dir.z < 0) {
-            myTransform.rotation = Quaternion.Euler(0, 270, 0);
+        else if (dir.x >= 0 && dir.z < 0)
+        {
+            if (dir.x >= Math.Abs(dir.z))
+            {
+                myTransform.rotation = Quaternion.Euler(0, 270, 0);
+            }
+            else
+            {
+                myTransform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+
         }
-        if (dir.z > 0) {
-            myTransform.rotation = Quaternion.Euler(0, 90, 0);
+        else if (dir.x < 0 && dir.z >= 0)
+        {
+            if (Math.Abs(dir.x) >= Math.Abs(dir.z))
+            {
+                myTransform.rotation = Quaternion.Euler(0, 90, 0);
+            }
+            else
+            {
+                myTransform.rotation = Quaternion.Euler(0, 180, 0);
+            }
         }
-        /*
+        else if (dir.x < 0 && dir.z < 0)
+        {
+            if (Math.Abs(dir.x) >= Math.Abs(dir.z))
+            {
+                myTransform.rotation = Quaternion.Euler(0, 270, 0);
+            }
+            else
+            {
+                myTransform.rotation = Quaternion.Euler(0, 180, 0);
+            }
+        }
+
         if (Input.GetKey (KeyCode.W))
         { //Up movement
             rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, moveSpeed);
-            //myTransform.rotation = Quaternion.Euler (0, 0, 0);
-            //animator.SetBool ("Walking", true);
+            myTransform.rotation = Quaternion.Euler (0, 0, 0);
+            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.A))
         { //Left movement
             rigidBody.velocity = new Vector3 (-moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
-            //myTransform.rotation = Quaternion.Euler (0, 270, 0);
-            //animator.SetBool ("Walking", true);
+            myTransform.rotation = Quaternion.Euler (0, 270, 0);
+            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.S))
         { //Down movement
             rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -moveSpeed);
-            //myTransform.rotation = Quaternion.Euler (0, 180, 0);
-            //animator.SetBool ("Walking", true);
+            myTransform.rotation = Quaternion.Euler (0, 180, 0);
+            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.D))
         { //Right movement
             rigidBody.velocity = new Vector3 (moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
-            //myTransform.rotation = Quaternion.Euler (0, 90, 0);
-            //animator.SetBool ("Walking", true);
+            myTransform.rotation = Quaternion.Euler (0, 90, 0);
+            animator.SetBool ("Walking", true);
         }
-        */
+
 
         if (Input.GetKeyDown(KeyCode.Space))
         { //Drop bomb
             bombput();
+        }
+        if (Input.GetKeyDown(KeyCode.LeftShift) && weakwallPrefab) {
+            CmdBuild();
         }
     }
 
@@ -243,10 +349,16 @@ public class Player : NetworkBehaviour
         bomb.GetComponent<Bomb>().initBomb(scope, id);
         NetworkServer.Spawn(bomb);
     }
+    [Command]
+    void CmdBuild() {
+        GameObject weakwall = Instantiate(weakwallPrefab, new Vector3(Mathf.RoundToInt(myTransform.position.x), weakwallPrefab.transform.position.y, Mathf.RoundToInt(myTransform.position.z)),
+                                          weakwallPrefab.transform.rotation);
+        NetworkServer.Spawn(weakwall);
+    }
 
     [Command]
     void CmdTakeDamage(){
-        healthValue -= 10;
+        healthValue -= 1;
         RpcTakeDamage(healthValue);
     }
 
@@ -258,18 +370,63 @@ public class Player : NetworkBehaviour
 
     public void OnTriggerEnter (Collider other)
     {
-        if (!dead && other.CompareTag ("Explosion"))
+        if (!dead && other.CompareTag ("Explosion") && immuneTime <= 0)
         { //Not dead & hit by explosion
             Debug.Log ("P"  + " hit by explosion!");
             CmdTakeDamage();
-            if(healthValue <= 0){
+            if (healthValue <= 0)
+            {
                 dead = true;
                 //globalManager.PlayerDied (playerNumber); //Notify global state manager that this player died
-                Destroy (gameObject);
+                Destroy(gameObject);
             }
-            
+
+            Vector3 dir = other.gameObject.GetComponent<DestroySelf>().getDir();
+            int power = other.gameObject.GetComponent<DestroySelf>().getPower();
+            if (dir == Vector3.back) {
+                downPower = power;
+                toDown = true;
+            }
+            else if(dir == Vector3.forward) {
+                upPower = power;
+                toUp = true;
+            }
+            else if(dir == Vector3.left) {
+                leftPower = power;
+                toLeft = true;
+            }
+            else {
+                rightPower = power;
+                toRight = true;
+            }
+        }
+        //on banana
+        if (other.gameObject.CompareTag("Banana"))
+        {
+            bananaed = true;
+            canMove = false;
         }
     }
+
+    public void OnCollisionEnter(Collision collision)
+    {
+        //stop sliding
+        if ((collision.gameObject.CompareTag("Weakwall") || collision.gameObject.CompareTag("Block")) && bananaed)
+        {
+            bananaed = false;
+            canMove = true;
+            Debug.Log(" hit the wall!");
+        }
+    }
+    public void onBanana(Vector3 dir) {
+        slipDir = dir;
+    }
+
+    //become immunable
+    public void toImmune() {
+        immuneTime = 3f;
+    }
+
     // interact with bombs
     public void enableDrop()
     {
