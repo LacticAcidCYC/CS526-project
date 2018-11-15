@@ -71,6 +71,7 @@ public class Bomb : NetworkBehaviour
     {
         if (!exploded & (other.CompareTag ("Explosion") || other.CompareTag("Dart")))
         { //If not exploded yet and this bomb is hit by an explosion...
+
             CancelInvoke ("Explode"); //Cancel the already called Explode, else the bomb might explode twice 
             Explode (); //Finally, explode!
         }

@@ -3,6 +3,7 @@ using System.Collections;
 using System;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using Random = System.Random;
 
 public class Player : NetworkBehaviour
 {
@@ -64,11 +65,16 @@ public class Player : NetworkBehaviour
     private bool bananaed = false;
     private Vector3 slipDir = Vector3.zero;
 
+    //reverse control
+    private bool reverseCTL = false;
+    private float reverseTime = 0f;
+
     //last player rotation
     private int lastBodyRotation;
     //Prefabs
     public GameObject bombPrefab;
     public GameObject weakwallPrefab;
+    public GameObject dartPrefab;
     //JoyStick控制
     //private Image joystick;
     private FloatingJoystick joystick;
@@ -111,6 +117,13 @@ public class Player : NetworkBehaviour
         //decrease the immune time
         if(immuneTime > 0) {
             immuneTime -= Time.deltaTime;
+        }
+        //decrease the reverse control time
+        if(reverseTime > 0) {
+            reverseTime -= Time.deltaTime;
+            if(reverseTime <= 0) {
+                reverseCTL = false;
+            }
         }
         //slip to slipDir with a speed of 10f
         if(bananaed) {
@@ -182,6 +195,10 @@ public class Player : NetworkBehaviour
         Vector3 dir = Vector3.zero;
         dir.x = joystick.Horizontal;
         dir.z = joystick.Vertical;
+        if(reverseCTL) {
+            dir.x = -dir.x;
+            dir.z = -dir.z;
+        }
         rigidBody.velocity = new Vector3(dir.x * (moveSpeed + speedup), 0, dir.z * (moveSpeed + speedup));
         if (dir.x == 0 && dir.z == 0) {
             animator.SetBool("Walking", false);
@@ -285,6 +302,27 @@ public class Player : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift) && weakwallPrefab) {
             CmdBuild();
         }
+        if (Input.GetKeyDown(KeyCode.RightShift) && dartPrefab)
+        {
+            Vector3 lastDir = Vector3.zero;
+            if (lastBodyRotation == 0)
+            {
+                lastDir = Vector3.forward;
+            }
+            else if (lastBodyRotation == 90)
+            {
+                lastDir = Vector3.right;
+            }
+            else if (lastBodyRotation == 180)
+            {
+                lastDir = Vector3.back;
+            }
+            else
+            {
+                lastDir = Vector3.left;
+            }
+            CmdShoot(lastDir);
+        }
     }
 
     public void bombput()
@@ -374,8 +412,24 @@ public class Player : NetworkBehaviour
     }
 
     [Command]
+    void CmdShoot(Vector3 dir)
+    {
+        GameObject dart = Instantiate(dartPrefab, new Vector3(myTransform.position.x, dartPrefab.transform.position.y, myTransform.position.z),
+                                          dartPrefab.transform.rotation);
+        dart.gameObject.GetComponent<Dart>().setDir(dir);
+        NetworkServer.Spawn(dart);
+    }
+
+    [Command]
     void CmdTakeDamage(){
         healthValue -= 1;
+        RpcTakeDamage(healthValue);
+    }
+
+    [Command]
+    void CmdGetHeal(int value)
+    {
+        healthValue += value;
         RpcTakeDamage(healthValue);
     }
 
@@ -472,6 +526,19 @@ public class Player : NetworkBehaviour
     public void powerUp(){
         if(bombScope < MAX_SCOPE) {
             bombScope++;
+        }
+    }
+    public void eatApple() {
+        CmdGetHeal(20);
+    }
+    public void eatMushroom() {
+        Random random = new Random();
+        if(random.Next(2) == 0) {
+            CmdGetHeal(30);
+        }
+        else{
+            reverseCTL = true;
+            reverseTime = 3f;
         }
     }
 }

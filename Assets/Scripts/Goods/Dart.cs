@@ -5,6 +5,8 @@ using UnityEngine.Networking;
 
 public class Dart : NetworkBehaviour
 {
+    [SyncVar]
+    private Vector3 direction = Vector3.zero;
     // Use this for initialization
     void Start()
     {
@@ -14,7 +16,7 @@ public class Dart : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        GetComponent<Rigidbody>().AddForce(direction * 10, ForceMode.VelocityChange);
     }
 
     public void OnTriggerEnter(Collider other)
@@ -23,5 +25,17 @@ public class Dart : NetworkBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    //public void OnCollisionEnter(Collision collision)
+    //{
+    //    if (!collision.gameObject.CompareTag("Player"))
+    //    {
+    //        Destroy(gameObject);
+    //    }
+    //}
+
+    public void setDir(Vector3 dir) {
+        direction = dir; 
     }
 }
