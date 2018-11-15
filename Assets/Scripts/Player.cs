@@ -64,6 +64,8 @@ public class Player : NetworkBehaviour
     private bool bananaed = false;
     private Vector3 slipDir = Vector3.zero;
 
+    //last player rotation
+    private int lastBodyRotation;
     //Prefabs
     public GameObject bombPrefab;
     public GameObject weakwallPrefab;
@@ -170,6 +172,7 @@ public class Player : NetworkBehaviour
         //     UpdatePlayer2Movement ();
         // }
     }
+    
 
     /// <summary>
     /// Updates Player 1's movement and facing rotation using the WASD keys and drops bombs using Space
@@ -179,83 +182,97 @@ public class Player : NetworkBehaviour
         Vector3 dir = Vector3.zero;
         dir.x = joystick.Horizontal;
         dir.z = joystick.Vertical;
-        rigidBody.velocity = new Vector3(dir.x * moveSpeed, 0, dir.z * moveSpeed);
+        rigidBody.velocity = new Vector3(dir.x * (moveSpeed + speedup), 0, dir.z * (moveSpeed + speedup));
         if (dir.x == 0 && dir.z == 0) {
             animator.SetBool("Walking", false);
         }else {
             animator.SetBool("Walking", true);
         }
 
-        if (dir.x >= 0 && dir.z >= 0)
-        {
-            if (dir.x >= dir.z)
-            {
-                myTransform.rotation = Quaternion.Euler(0, 90, 0);
-            }
-            else
-            {
-                myTransform.rotation = Quaternion.Euler(0, 0, 0);
-            }
-        }
-        else if (dir.x >= 0 && dir.z < 0)
-        {
-            if (dir.x >= Math.Abs(dir.z))
-            {
-                myTransform.rotation = Quaternion.Euler(0, 270, 0);
-            }
-            else
-            {
-                myTransform.rotation = Quaternion.Euler(0, 0, 0);
-            }
 
+        if (dir.x == 0 && dir.z == 0) {
+            myTransform.rotation = Quaternion.Euler(0, lastBodyRotation, 0);
+        } else {
+            if (dir.x >= 0 && dir.z >= 0)
+            {
+                if (dir.x > dir.z)
+                {
+                    myTransform.rotation = Quaternion.Euler(0, 90, 0);
+                    lastBodyRotation = 90;
+                }
+                else
+                {
+                    myTransform.rotation = Quaternion.Euler(0, 0, 0);
+                    lastBodyRotation = 0;
+                }
+            }
+            else if (dir.x >= 0 && dir.z < 0)
+            {
+                if (dir.x >= Math.Abs(dir.z))
+                {
+                    myTransform.rotation = Quaternion.Euler(0, 90, 0);
+                    lastBodyRotation = 90;
+                }
+                else
+                {
+                    myTransform.rotation = Quaternion.Euler(0, 180, 0);
+                    lastBodyRotation = 180;
+                }
+
+            }
+            else if (dir.x < 0 && dir.z >= 0)
+            {
+                if (Math.Abs(dir.x) >= Math.Abs(dir.z))
+                {
+                    myTransform.rotation = Quaternion.Euler(0, 270, 0);
+                    lastBodyRotation = 270;
+                }
+                else
+                {
+                    myTransform.rotation = Quaternion.Euler(0, 0, 0);
+                    lastBodyRotation = 0;
+                }
+            }
+            else if (dir.x < 0 && dir.z < 0)
+            {
+                if (Math.Abs(dir.x) >= Math.Abs(dir.z))
+                {
+                    myTransform.rotation = Quaternion.Euler(0, 270, 0);
+                    lastBodyRotation = 270;
+                }
+                else
+                {
+                    myTransform.rotation = Quaternion.Euler(0, 180, 0);
+                    lastBodyRotation = 180;
+                }
+            }
         }
-        else if (dir.x < 0 && dir.z >= 0)
-        {
-            if (Math.Abs(dir.x) >= Math.Abs(dir.z))
-            {
-                myTransform.rotation = Quaternion.Euler(0, 90, 0);
-            }
-            else
-            {
-                myTransform.rotation = Quaternion.Euler(0, 180, 0);
-            }
-        }
-        else if (dir.x < 0 && dir.z < 0)
-        {
-            if (Math.Abs(dir.x) >= Math.Abs(dir.z))
-            {
-                myTransform.rotation = Quaternion.Euler(0, 270, 0);
-            }
-            else
-            {
-                myTransform.rotation = Quaternion.Euler(0, 180, 0);
-            }
-        }
+
 
         if (Input.GetKey (KeyCode.W))
         { //Up movement
-            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, moveSpeed);
+            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, (moveSpeed + speedup));
             myTransform.rotation = Quaternion.Euler (0, 0, 0);
             animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.A))
         { //Left movement
-            rigidBody.velocity = new Vector3 (-moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
+            rigidBody.velocity = new Vector3 (-(moveSpeed + speedup), rigidBody.velocity.y, rigidBody.velocity.z);
             myTransform.rotation = Quaternion.Euler (0, 270, 0);
             animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.S))
         { //Down movement
-            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -moveSpeed);
+            rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -(moveSpeed + speedup));
             myTransform.rotation = Quaternion.Euler (0, 180, 0);
             animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.D))
         { //Right movement
-            rigidBody.velocity = new Vector3 (moveSpeed, rigidBody.velocity.y, rigidBody.velocity.z);
+            rigidBody.velocity = new Vector3 ((moveSpeed + speedup), rigidBody.velocity.y, rigidBody.velocity.z);
             myTransform.rotation = Quaternion.Euler (0, 90, 0);
             animator.SetBool ("Walking", true);
         }
