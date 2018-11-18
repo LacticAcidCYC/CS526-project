@@ -53,10 +53,10 @@ public class Bomb : NetworkBehaviour
         //Create a first explosion at the bomb position
         Instantiate (explosionPrefab, transform.position, Quaternion.identity) ;
         //For every direction, start a chain of explosions
-        StartCoroutine (CreateExplosions (Vector3.forward));
-        StartCoroutine (CreateExplosions (Vector3.right));
-        StartCoroutine (CreateExplosions (Vector3.back));
-        StartCoroutine (CreateExplosions (Vector3.left));
+        StartCoroutine (CreateExplosions (Vector3.forward, bombScope));
+        StartCoroutine (CreateExplosions (Vector3.right, bombScope));
+        StartCoroutine (CreateExplosions (Vector3.back, bombScope));
+        StartCoroutine (CreateExplosions (Vector3.left, bombScope));
 
         GetComponent<MeshRenderer> ().enabled = false; //Disable mesh
         exploded = true;
@@ -69,14 +69,15 @@ public class Bomb : NetworkBehaviour
 
     public void OnTriggerEnter (Collider other)
     {
-        if (!exploded && other.CompareTag ("Explosion"))
+        if (!exploded & (other.CompareTag ("Explosion") || other.CompareTag("Dart")))
         { //If not exploded yet and this bomb is hit by an explosion...
+
             CancelInvoke ("Explode"); //Cancel the already called Explode, else the bomb might explode twice 
             Explode (); //Finally, explode!
         }
     }
 
-    private IEnumerator CreateExplosions (Vector3 direction)
+    private IEnumerator CreateExplosions (Vector3 direction, int power)
     {
         for (int i = 1; i < bombScope; i++)
         { //The 3 here dictates how far the raycasts will check, in this case 3 tiles far
@@ -89,12 +90,14 @@ public class Bomb : NetworkBehaviour
                 Destroy(hitCollider.gameObject);
             }
             if(!hitCollider || hitCollider.gameObject.CompareTag("Weakwall")) {
-                Instantiate(explosionPrefab, transform.position + (i * direction), explosionPrefab.transform.rotation);
+                GameObject explosion = Instantiate(explosionPrefab, transform.position + (i * direction), explosionPrefab.transform.rotation);
+                explosion.GetComponent<DestroySelf>().setDir(direction);
+                explosion.GetComponent<DestroySelf>().setPower(power);
             }
             if(hitCollider) {
                 break;
             }
-            yield return new WaitForSeconds (.05f); //Wait 50 milliseconds before checking the next location
+            yield return new WaitForSeconds (.02f); //Wait 50 milliseconds before checking the next location
         }
 
     }
