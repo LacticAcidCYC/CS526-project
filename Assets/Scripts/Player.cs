@@ -99,6 +99,9 @@ public class Player : NetworkBehaviour
         animator = GetComponent<Animator> ();
         if(isLocalPlayer){
             GameObject.FindGameObjectWithTag("bombControl").GetComponent<Button>().onClick.AddListener(this.OnClickBomb);
+            //GameObject.FindGameObjectsWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.banana);
+            //GameObject.FindGameObjectsWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.invincible);
+            //GameObject.FindGameObjectsWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.dart);
         }
     }
 
