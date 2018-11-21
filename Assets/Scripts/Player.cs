@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -7,6 +7,7 @@ using Random = System.Random;
 
 public class Player : NetworkBehaviour
 {
+    public Material[] playerMats;
     // 最多拥有的炸弹数：初始炸弹数 bombs + MAX_BOMBS
     private readonly int MAX_BOMBS = 5;
     private readonly int MAX_SCOPE = 7;
@@ -16,7 +17,7 @@ public class Player : NetworkBehaviour
     public float healthValue = 100;
     public Slider healthSlider;
 
-    public float moveSpeed = 5f;
+    public float moveSpeed;
     public bool canDropBombs = true;
     //Can the player drop bombs?
     public bool canMove = true;
@@ -103,6 +104,9 @@ public class Player : NetworkBehaviour
             //GameObject.FindGameObjectsWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.invincible);
             //GameObject.FindGameObjectsWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.dart);
         }
+        var myColor = GetComponent<Prototype.NetworkLobby.PlayerInfo>().m_color;
+        var i = Math.Max(Array.FindIndex(Prototype.NetworkLobby.LobbyPlayer.Colors, color => color == myColor), 0) % playerMats.Length;
+        GetComponent<SkinnedMeshRenderer>().material = playerMats[i];
     }
 
     // Update is called once per frame
@@ -112,7 +116,16 @@ public class Player : NetworkBehaviour
         {
             UpdateMovement();
         }
+        UpdateMoveAnimation();
+    }
 
+    private void UpdateMoveAnimation()
+    {
+        animator.speed = Mathf.Max(rigidBody.velocity.magnitude, 1);
+        if(isLocalPlayer)
+        {
+            animator.SetFloat("Speed_f", Mathf.Min(rigidBody.velocity.magnitude, 1));
+        }
     }
 
     private void FixedUpdate()
@@ -202,13 +215,11 @@ public class Player : NetworkBehaviour
             dir.x = -dir.x;
             dir.z = -dir.z;
         }
-        rigidBody.velocity = new Vector3(dir.x * (moveSpeed + speedup), 0, dir.z * (moveSpeed + speedup));
-        if (dir.x == 0 && dir.z == 0) {
-            animator.SetBool("Walking", false);
-        }else {
-            animator.SetBool("Walking", true);
+        if(dead)
+        {
+            return;
         }
-
+        rigidBody.velocity = new Vector3(dir.x * (moveSpeed + speedup), 0, dir.z * (moveSpeed + speedup));
 
         if (dir.x == 0 && dir.z == 0) {
             myTransform.rotation = Quaternion.Euler(0, lastBodyRotation, 0);
@@ -269,32 +280,29 @@ public class Player : NetworkBehaviour
         }
 
 
+        // TODO: add animator
         if (Input.GetKey (KeyCode.W))
         { //Up movement
             rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, (moveSpeed + speedup));
             myTransform.rotation = Quaternion.Euler (0, 0, 0);
-            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.A))
         { //Left movement
             rigidBody.velocity = new Vector3 (-(moveSpeed + speedup), rigidBody.velocity.y, rigidBody.velocity.z);
             myTransform.rotation = Quaternion.Euler (0, 270, 0);
-            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.S))
         { //Down movement
             rigidBody.velocity = new Vector3 (rigidBody.velocity.x, rigidBody.velocity.y, -(moveSpeed + speedup));
             myTransform.rotation = Quaternion.Euler (0, 180, 0);
-            animator.SetBool ("Walking", true);
         }
 
         if (Input.GetKey (KeyCode.D))
         { //Right movement
             rigidBody.velocity = new Vector3 ((moveSpeed + speedup), rigidBody.velocity.y, rigidBody.velocity.z);
             myTransform.rotation = Quaternion.Euler (0, 90, 0);
-            animator.SetBool ("Walking", true);
         }
 
 
@@ -425,7 +433,7 @@ public class Player : NetworkBehaviour
 
     [Command]
     void CmdTakeDamage(){
-        healthValue -= 1;
+        healthValue -= 50;
         RpcTakeDamage(healthValue);
     }
 
@@ -442,6 +450,11 @@ public class Player : NetworkBehaviour
         healthSlider.value = healthValue;
     }
 
+    public void destroySelf()
+    {
+        Destroy(gameObject);
+    }
+
     public void OnTriggerEnter (Collider other)
     {
         if (!dead && other.CompareTag ("Explosion") && immuneTime <= 0)
@@ -451,8 +464,11 @@ public class Player : NetworkBehaviour
             if (healthValue <= 0)
             {
                 dead = true;
+                rigidBody.velocity = Vector3.zero;
+                animator.speed = 1;
+                animator.SetBool("Death_b", true);
                 //globalManager.PlayerDied (playerNumber); //Notify global state manager that this player died
-                Destroy(gameObject);
+                Invoke("destroySelf", 2.0f);
             }
 
             Vector3 dir = other.gameObject.GetComponent<DestroySelf>().getDir();
