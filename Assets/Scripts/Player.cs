@@ -76,6 +76,7 @@ public class Player : NetworkBehaviour
     public GameObject weakwallPrefab;
     public GameObject dartPrefab;
     public GameObject firePrefab;
+    public GameObject bananaPrefab;
     //JoyStick控制
     //private Image joystick;
     private FloatingJoystick joystick;
@@ -101,9 +102,9 @@ public class Player : NetworkBehaviour
         animator = GetComponent<Animator> ();
         if(isLocalPlayer){
             GameObject.FindGameObjectWithTag("bombControl").GetComponent<Button>().onClick.AddListener(this.OnClickBomb);
-            //GameObject.FindGameObjectsWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.banana);
-            //GameObject.FindGameObjectsWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.invincible);
-            //GameObject.FindGameObjectsWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.dart);
+            GameObject.FindGameObjectWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.CmdDropBanana);
+            GameObject.FindGameObjectWithTag("dartControl").GetComponent<Button>().onClick.AddListener(this.shoot);
+            GameObject.FindGameObjectWithTag("invincibleControl").GetComponent<Button>().onClick.AddListener(this.toImmune);
         }
     }
 
@@ -122,7 +123,6 @@ public class Player : NetworkBehaviour
         // take damage when close to the campfire
         Vector3 v1 = gameObject.transform.position;
         Vector3 v2 = firePrefab.transform.position;
-        Debug.Log(Vector3.Distance(v1, v2));
         if (Vector3.Distance(v1, v2) < 2) {
             CmdTakeDamage(0.1f);
         }
@@ -316,24 +316,7 @@ public class Player : NetworkBehaviour
         }
         if (Input.GetKeyDown(KeyCode.RightShift) && dartPrefab)
         {
-            Vector3 lastDir = Vector3.zero;
-            if (lastBodyRotation == 0)
-            {
-                lastDir = Vector3.forward;
-            }
-            else if (lastBodyRotation == 90)
-            {
-                lastDir = Vector3.right;
-            }
-            else if (lastBodyRotation == 180)
-            {
-                lastDir = Vector3.back;
-            }
-            else
-            {
-                lastDir = Vector3.left;
-            }
-            CmdShoot(lastDir);
+            shoot();
         }
     }
 
@@ -433,6 +416,14 @@ public class Player : NetworkBehaviour
     }
 
     [Command]
+    void CmdDropBanana()
+    {
+        GameObject banana = Instantiate(bananaPrefab, new Vector3(Mathf.RoundToInt(myTransform.position.x), bananaPrefab.transform.position.y, Mathf.RoundToInt(myTransform.position.z)),
+                                      bananaPrefab.transform.rotation);
+        NetworkServer.Spawn(banana);
+    }
+
+    [Command]
     void CmdTakeDamage(float dmg){
         healthValue -= dmg;
         RpcTakeDamage(healthValue);
@@ -500,6 +491,28 @@ public class Player : NetworkBehaviour
             Debug.Log(" hit the wall!");
         }
     }
+
+    public void shoot() {
+        Vector3 lastDir = Vector3.zero;
+        if (lastBodyRotation == 0)
+        {
+            lastDir = Vector3.forward;
+        }
+        else if (lastBodyRotation == 90)
+        {
+            lastDir = Vector3.right;
+        }
+        else if (lastBodyRotation == 180)
+        {
+            lastDir = Vector3.back;
+        }
+        else
+        {
+            lastDir = Vector3.left;
+        }
+        CmdShoot(lastDir);
+    }
+
     public void onBanana(Vector3 dir) {
         slipDir = dir;
     }
