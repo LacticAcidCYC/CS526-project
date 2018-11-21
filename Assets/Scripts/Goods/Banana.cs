@@ -49,4 +49,11 @@ public class Banana : NetworkBehaviour
         }
 
     }
+    public void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.CompareTag("Player"))
+        { // When the player exits the trigger area
+            GetComponent<Collider>().isTrigger = true; // Disable the trigger
+        }
+    }
 }

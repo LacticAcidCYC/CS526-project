@@ -16,7 +16,7 @@ public class Dart : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        GetComponent<Rigidbody>().AddForce(direction * 10, ForceMode.VelocityChange);
+        GetComponent<Rigidbody>().AddForce(direction * 0.5f, ForceMode.VelocityChange);
     }
 
     public void OnTriggerEnter(Collider other)
