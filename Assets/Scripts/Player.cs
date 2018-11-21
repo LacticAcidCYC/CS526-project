@@ -75,6 +75,7 @@ public class Player : NetworkBehaviour
     public GameObject bombPrefab;
     public GameObject weakwallPrefab;
     public GameObject dartPrefab;
+    public GameObject firePrefab;
     //JoyStick控制
     //private Image joystick;
     private FloatingJoystick joystick;
@@ -95,6 +96,7 @@ public class Player : NetworkBehaviour
         rigidBody = GetComponent<Rigidbody>();
         myTransform = transform;
         joystick = FindObjectOfType<FloatingJoystick>();
+        firePrefab = GameObject.FindGameObjectWithTag("fire");
         //animator = myTransform.Find ("PlayerModel").GetComponent<Animator> ();
         animator = GetComponent<Animator> ();
         if(isLocalPlayer){
@@ -116,7 +118,14 @@ public class Player : NetworkBehaviour
     }
 
     private void FixedUpdate()
-    {   
+    {
+        // take damage when close to the campfire
+        Vector3 v1 = gameObject.transform.position;
+        Vector3 v2 = firePrefab.transform.position;
+        Debug.Log(Vector3.Distance(v1, v2));
+        if (Vector3.Distance(v1, v2) < 2) {
+            CmdTakeDamage(0.1f);
+        }
         //decrease the immune time
         if(immuneTime > 0) {
             immuneTime -= Time.deltaTime;
@@ -424,8 +433,8 @@ public class Player : NetworkBehaviour
     }
 
     [Command]
-    void CmdTakeDamage(){
-        healthValue -= 1;
+    void CmdTakeDamage(float dmg){
+        healthValue -= dmg;
         RpcTakeDamage(healthValue);
     }
 
@@ -438,7 +447,6 @@ public class Player : NetworkBehaviour
 
     [ClientRpc]
     void RpcTakeDamage(float healthValue){
-        Debug.Log(healthValue + "RpcTakeDamage");
         healthSlider.value = healthValue;
     }
 
@@ -447,7 +455,7 @@ public class Player : NetworkBehaviour
         if (!dead && other.CompareTag ("Explosion") && immuneTime <= 0)
         { //Not dead & hit by explosion
             Debug.Log ("P"  + " hit by explosion!");
-            CmdTakeDamage();
+            CmdTakeDamage(1);
             if (healthValue <= 0)
             {
                 dead = true;
