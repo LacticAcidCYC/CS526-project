@@ -17,6 +17,9 @@ public class Player : NetworkBehaviour
     public float healthValue = 100;
     public Slider healthSlider;
 
+    private Quaternion hpBarRotation;
+    private RectTransform hpBarTransform;
+
     public float moveSpeed;
     public bool canDropBombs = true;
     //Can the player drop bombs?
@@ -106,6 +109,11 @@ public class Player : NetworkBehaviour
             GameObject.FindGameObjectWithTag("bananaControl").GetComponent<Button>().onClick.AddListener(this.CmdDropBanana);
             GameObject.FindGameObjectWithTag("dartControl").GetComponent<Button>().onClick.AddListener(this.shoot);
             GameObject.FindGameObjectWithTag("invincibleControl").GetComponent<Button>().onClick.AddListener(this.toImmune);
+
+            GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraFollow>().player = gameObject;
+
+            hpBarTransform = transform.Find("Canvas").GetComponent<RectTransform>();
+            hpBarRotation = hpBarTransform.rotation;
         }
         var myColor = GetComponent<Prototype.NetworkLobby.PlayerInfo>().m_color;
         var i = Math.Max(Array.FindIndex(Prototype.NetworkLobby.LobbyPlayer.Colors, color => color == myColor), 0) % playerMats.Length;
@@ -123,6 +131,7 @@ public class Player : NetworkBehaviour
             {
                 rigidBody.AddForce(slipDir * 10f , ForceMode.VelocityChange);
             }
+            hpBarTransform.rotation = hpBarRotation;
         }
         UpdateMoveAnimation();
 
