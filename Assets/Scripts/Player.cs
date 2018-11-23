@@ -118,16 +118,27 @@ public class Player : NetworkBehaviour
         if (isLocalPlayer)
         {
             UpdateMovement();
+            //slip to slipDir with a speed of 10f
+            if (bananaed)
+            {
+                rigidBody.AddForce(slipDir * 10f , ForceMode.VelocityChange);
+            }
         }
         UpdateMoveAnimation();
+
     }
 
     private void UpdateMoveAnimation()
     {
-        animator.speed = Mathf.Max(rigidBody.velocity.magnitude, 1);
+        if (bananaed) {
+            animator.SetFloat("Speed_f", 0);
+            return;
+        }
+        float r = 0.5f;
+        animator.speed = Mathf.Max(rigidBody.velocity.magnitude * r, 1);
         if(isLocalPlayer)
         {
-            animator.SetFloat("Speed_f", Mathf.Min(rigidBody.velocity.magnitude, 1));
+            animator.SetFloat("Speed_f", Mathf.Min(rigidBody.velocity.magnitude * r, 1));
         }
     }
 
@@ -150,10 +161,7 @@ public class Player : NetworkBehaviour
                 reverseCTL = false;
             }
         }
-        //slip to slipDir with a speed of 10f
-        if(bananaed) {
-            rigidBody.AddForce(slipDir * 10f, ForceMode.VelocityChange);
-        }
+
         //the effect by exlposion
         if(toLeft) {
             leftTime = 0.5f + 0.1f * leftPower;
@@ -490,7 +498,7 @@ public class Player : NetworkBehaviour
             }
         }
         //on banana
-        if (other.gameObject.CompareTag("Banana"))
+        if (other.gameObject.CompareTag("Banana") && other.GetComponent<Banana>().isValid())
         {
             bananaed = true;
             canMove = false;

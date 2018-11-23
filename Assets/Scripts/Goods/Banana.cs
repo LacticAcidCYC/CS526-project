@@ -5,10 +5,11 @@ using UnityEngine.Networking;
 
 public class Banana : NetworkBehaviour
 {
+    private float createdAt;
     // Use this for initialization
     void Start()
     {
-
+        createdAt = Time.time;
     }
 
     // Update is called once per frame
@@ -17,8 +18,15 @@ public class Banana : NetworkBehaviour
 
     }
 
+    public bool isValid() {
+        return Time.time - createdAt > 0.8f;
+    }
+
     public void OnTriggerEnter(Collider other)
     {
+        if(!isValid()) {
+            return;
+        }
 
         if (other.gameObject.CompareTag("Player"))
         {
