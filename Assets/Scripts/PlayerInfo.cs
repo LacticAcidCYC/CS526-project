@@ -25,7 +25,7 @@ namespace Prototype.NetworkLobby{
             Debug.Log(GameObject.FindGameObjectsWithTag("lobbyPlayer").Length);
             Debug.Log("-----");
 
-            GetComponent<Renderer>().material.color = m_color;
+            // GetComponent<Renderer>().material.color = m_color;
 		
 	}
 	
