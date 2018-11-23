@@ -112,9 +112,9 @@ public class Player : NetworkBehaviour
 
             GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraFollow>().player = gameObject;
 
-            hpBarTransform = transform.Find("Canvas").GetComponent<RectTransform>();
-            hpBarRotation = hpBarTransform.rotation;
         }
+        hpBarTransform = transform.Find("Canvas").GetComponent<RectTransform>();
+        hpBarRotation = hpBarTransform.rotation;
         var myColor = GetComponent<Prototype.NetworkLobby.PlayerInfo>().m_color;
         var i = Math.Max(Array.FindIndex(Prototype.NetworkLobby.LobbyPlayer.Colors, color => color == myColor), 0) % playerMats.Length;
         GetComponent<SkinnedMeshRenderer>().material = playerMats[i];
@@ -131,10 +131,9 @@ public class Player : NetworkBehaviour
             {
                 rigidBody.AddForce(slipDir * 10f , ForceMode.VelocityChange);
             }
-            hpBarTransform.rotation = hpBarRotation;
         }
         UpdateMoveAnimation();
-
+        hpBarTransform.rotation = hpBarRotation;
     }
 
     private void UpdateMoveAnimation()
