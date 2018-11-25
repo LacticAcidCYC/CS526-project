@@ -19,7 +19,7 @@ public class Banana : NetworkBehaviour
     }
 
     public bool isValid() {
-        return Time.time - createdAt > 0.8f;
+        return Time.time - createdAt > 0.6f;
     }
 
     public void OnTriggerEnter(Collider other)

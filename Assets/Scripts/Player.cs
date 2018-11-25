@@ -156,7 +156,7 @@ public class Player : NetworkBehaviour
         Vector3 v1 = gameObject.transform.position;
         Vector3 v2 = firePrefab.transform.position;
         if (Vector3.Distance(v1, v2) < 2) {
-            CmdTakeDamage(0.1f);
+            CmdTakeDamage(0.2f);
         }
         //decrease the immune time
         if(immuneTime > 0) {
@@ -457,6 +457,9 @@ public class Player : NetworkBehaviour
     void CmdGetHeal(int value)
     {
         healthValue += value;
+        if(healthValue > 100) {
+            healthValue = 100;
+        }
         RpcTakeDamage(healthValue);
     }
 
@@ -516,7 +519,7 @@ public class Player : NetworkBehaviour
     public void OnCollisionEnter(Collision collision)
     {
         //stop sliding
-        if ((collision.gameObject.CompareTag("Weakwall") || collision.gameObject.CompareTag("Block")) && bananaed)
+        if ((collision.gameObject.CompareTag("Weakwall") || collision.gameObject.CompareTag("Block") || collision.gameObject.CompareTag("fire")) && bananaed)
         {
             bananaed = false;
             canMove = true;
@@ -585,12 +588,12 @@ public class Player : NetworkBehaviour
         }
     }
     public void eatApple() {
-        CmdGetHeal(20);
+        CmdGetHeal(30);
     }
     public void eatMushroom() {
         Random random = new Random();
         if(random.Next(2) == 0) {
-            CmdGetHeal(30);
+            CmdGetHeal(50);
         }
         else{
             reverseCTL = true;
