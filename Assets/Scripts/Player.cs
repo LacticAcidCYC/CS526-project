@@ -597,7 +597,7 @@ public class Player : NetworkBehaviour
         }
         else{
             reverseCTL = true;
-            reverseTime = 3f;
+            reverseTime = 4f;
         }
     }
 }
