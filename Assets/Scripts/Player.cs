@@ -478,7 +478,7 @@ public class Player : NetworkBehaviour
         if (!dead && other.CompareTag ("Explosion") && immuneTime <= 0)
         { //Not dead & hit by explosion
             Debug.Log ("P"  + " hit by explosion!");
-            CmdTakeDamage(10);
+            CmdTakeDamage(3);
             if (healthValue <= 0)
             {
                 dead = true;
@@ -588,12 +588,12 @@ public class Player : NetworkBehaviour
         }
     }
     public void eatApple() {
-        CmdGetHeal(30);
+        CmdGetHeal(50);
     }
     public void eatMushroom() {
         Random random = new Random();
         if(random.Next(2) == 0) {
-            CmdGetHeal(50);
+            CmdGetHeal(70);
         }
         else{
             reverseCTL = true;
