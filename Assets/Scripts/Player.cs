@@ -129,7 +129,7 @@ public class Player : NetworkBehaviour
             //slip to slipDir with a speed of 10f
             if (bananaed)
             {
-                rigidBody.AddForce(slipDir * 10f , ForceMode.VelocityChange);
+                rigidBody.AddForce(slipDir * 12f , ForceMode.VelocityChange);
             }
         }
         UpdateMoveAnimation();
@@ -155,8 +155,8 @@ public class Player : NetworkBehaviour
         // take damage when close to the campfire
         Vector3 v1 = gameObject.transform.position;
         Vector3 v2 = firePrefab.transform.position;
-        if (Vector3.Distance(v1, v2) < 2) {
-            CmdTakeDamage(0.2f);
+        if (Vector3.Distance(v1, v2) < 2 && immuneTime <= 0) {
+            CmdTakeDamage(0.15f);
         }
         //decrease the immune time
         if(immuneTime > 0) {
@@ -172,19 +172,19 @@ public class Player : NetworkBehaviour
 
         //the effect by exlposion
         if(toLeft) {
-            leftTime = 0.5f + 0.1f * leftPower;
+            leftTime = 0.3f + 0.1f * leftPower;
             toLeft = false;
         }
         if(toRight) {
-            rightTime = 0.5f + 0.1f * rightPower;
+            rightTime = 0.3f + 0.1f * rightPower;
             toRight = false;
         }
         if(toUp) {
-            upTime = 0.5f + 0.1f * upPower;
+            upTime = 0.3f + 0.1f * upPower;
             toUp = false;
         }
         if(toDown) {
-            downTime = 0.5f + 0.1f * downPower;
+            downTime = 0.3f + 0.1f * downPower;
             toDown = false;
         }
         if(leftTime > 0) {
@@ -478,7 +478,7 @@ public class Player : NetworkBehaviour
         if (!dead && other.CompareTag ("Explosion") && immuneTime <= 0)
         { //Not dead & hit by explosion
             Debug.Log ("P"  + " hit by explosion!");
-            CmdTakeDamage(1);
+            CmdTakeDamage(10);
             if (healthValue <= 0)
             {
                 dead = true;
